@@ -106,7 +106,7 @@ ensure_app_dir() {
   log "Preparing $APP_DIR..."
   run_sudo mkdir -p "$APP_DIR/logs" "$APP_DIR/backups"
   if [ ! -f "$APP_DIR/Caddyfile" ]; then
-    printf '{\n    admin off\n}\n' | run_sudo tee "$APP_DIR/Caddyfile" >/dev/null
+    printf '{\n    admin 127.0.0.2:2020\n}\n' | run_sudo tee "$APP_DIR/Caddyfile" >/dev/null
   fi
 }
 

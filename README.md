@@ -63,6 +63,7 @@ Default runtime ports:
 - Caddy HTTP redirect: `http://domain.test`
 - Caddy HTTPS proxy: `https://domain.test`
 - Go Domain aliases resolve to `127.0.0.2`, so Caddy can use a dedicated loopback address instead of `127.0.0.1`.
+- Go Domain Caddy uses admin endpoint `127.0.0.2:2020` so config reloads do not conflict with the default Caddy admin port `127.0.0.1:2019`.
 
 ---
 
@@ -200,6 +201,7 @@ Since the application runs as a background daemon via PM2, use the following com
 - **View activity/error logs:** `gd logs`
 - **Restart app only:** `gd restart-app`
 - **Restart Caddy only:** `gd restart-caddy`
+- **Diagnose a domain:** `gd doctor myapp.test`
 - **Restart services:** `gd restart`
 - **Stop services:** `gd stop`
 
@@ -209,5 +211,6 @@ Direct helper commands are also available:
 - **View activity/error logs:** `sudo ./scripts/go-domain logs`
 - **Restart app only:** `sudo ./scripts/go-domain restart-app`
 - **Restart Caddy only:** `sudo ./scripts/go-domain restart-caddy`
+- **Diagnose a domain:** `sudo ./scripts/go-domain doctor myapp.test`
 - **Restart services:** `sudo ./scripts/go-domain restart`
 - **Stop services:** `sudo ./scripts/go-domain stop`

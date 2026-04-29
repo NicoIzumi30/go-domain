@@ -41,6 +41,47 @@ run_pm2() {
   $PM2_BIN "$@"
 }
 
+doctor_domain() {
+  domain=${1:-}
+  if [ -z "$domain" ]; then
+    echo "Usage: sudo ./scripts/go-domain doctor <domain>" >&2
+    exit 1
+  fi
+
+  echo "== PM2 status =="
+  run_pm2 status
+
+  echo
+  echo "== Host resolution: $domain =="
+  getent hosts "$domain" || true
+
+  echo
+  echo "== /etc/hosts entry =="
+  grep -n "[[:space:]]$domain\\b" /etc/hosts || true
+
+  echo
+  echo "== Listening ports 80/443 =="
+  ss -ltnp | grep -E '(:80|:443)[[:space:]]' || true
+
+  echo
+  echo "== Go Domain Caddyfile entry =="
+  if [ -f /var/lib/go-domain/Caddyfile ]; then
+    awk -v domain="$domain" '
+      $0 ~ "^https?://" domain "([:{[:space:]]|$)" { printing = 1 }
+      printing == 1 { print }
+      printing == 1 && $0 == "}" { printing = 0; print "" }
+    ' /var/lib/go-domain/Caddyfile
+  else
+    echo "/var/lib/go-domain/Caddyfile not found"
+  fi
+
+  echo
+  echo "Expected:"
+  echo "- $domain resolves to 127.0.0.2"
+  echo "- caddy listens on 127.0.0.2:80 and 127.0.0.2:443 after the domain is applied"
+  echo "- apache must not listen on 0.0.0.0:80, *:80, 0.0.0.0:443, or *:443"
+}
+
 case "${1:-status}" in
   start)
     run_pm2 start "$PROJECT_DIR/ecosystem.config.cjs"
@@ -61,6 +102,9 @@ case "${1:-status}" in
   logs)
     run_pm2 logs "${2:-}" --lines "${3:-100}"
     ;;
+  doctor)
+    doctor_domain "${2:-}"
+    ;;
   stop)
     run_pm2 stop go-domain caddy
     ;;
@@ -68,7 +112,7 @@ case "${1:-status}" in
     run_pm2 delete go-domain caddy
     ;;
   *)
-    echo "Usage: sudo ./scripts/go-domain {start|restart|restart-app|restart-caddy|status|logs [app] [lines]|stop|delete}" >&2
+    echo "Usage: sudo ./scripts/go-domain {start|restart|restart-app|restart-caddy|status|logs [app] [lines]|doctor <domain>|stop|delete}" >&2
     exit 1
     ;;
 esac
