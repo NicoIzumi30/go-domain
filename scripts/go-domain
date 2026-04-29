@@ -96,6 +96,9 @@ case "${1:-status}" in
   restart-caddy)
     run_pm2 restart caddy
     ;;
+  trust)
+    caddy trust --address 127.0.0.2:2020
+    ;;
   status)
     run_pm2 status
     ;;
@@ -112,7 +115,7 @@ case "${1:-status}" in
     run_pm2 delete go-domain caddy
     ;;
   *)
-    echo "Usage: sudo ./scripts/go-domain {start|restart|restart-app|restart-caddy|status|logs [app] [lines]|doctor <domain>|stop|delete}" >&2
+    echo "Usage: sudo ./scripts/go-domain {start|restart-app|restart-caddy|trust|status|logs [app] [lines]|doctor <domain>|stop|delete}" >&2
     exit 1
     ;;
 esac

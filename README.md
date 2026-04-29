@@ -201,6 +201,7 @@ Since the application runs as a background daemon via PM2, use the following com
 - **View activity/error logs:** `gd logs`
 - **Restart app only:** `gd restart-app`
 - **Restart Caddy only:** `gd restart-caddy`
+- **Trust local HTTPS certificate authority:** `gd trust`
 - **Diagnose a domain:** `gd doctor myapp.test`
 - **Restart services:** `gd restart`
 - **Stop services:** `gd stop`
@@ -211,6 +212,7 @@ Direct helper commands are also available:
 - **View activity/error logs:** `sudo ./scripts/go-domain logs`
 - **Restart app only:** `sudo ./scripts/go-domain restart-app`
 - **Restart Caddy only:** `sudo ./scripts/go-domain restart-caddy`
+- **Trust local HTTPS certificate authority:** `sudo ./scripts/go-domain trust`
 - **Diagnose a domain:** `sudo ./scripts/go-domain doctor myapp.test`
 - **Restart services:** `sudo ./scripts/go-domain restart`
 - **Stop services:** `sudo ./scripts/go-domain stop`
