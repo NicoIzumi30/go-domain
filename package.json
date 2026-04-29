@@ -1,0 +1,20 @@
+{
+  "name": "go-domain",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Go Domain - Local domain proxy using Bun, Hono, Edge.js, and Caddy.",
+  "scripts": {
+    "dev": "bun run --hot server.ts",
+    "start": "bun run server.ts",
+    "background": "pm2 start server.ts --interpreter bun --name go-domain",
+    "stop": "pm2 stop go-domain"
+  },
+  "dependencies": {
+    "edge.js": "^6.5.0",
+    "hono": "^4.12.15"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "pm2": "latest"
+  }
+}

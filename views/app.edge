@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Go Domain</title>
+  <link rel="stylesheet" href="/public/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div>
+          <div class="topbar-title">Go Domain</div>
+          <div class="topbar-subtitle">Reverse proxy & domain alias</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-status running">
+          <div class="status-dot running"></div>
+          Daemon Active
+        </div>
+      </div>
+    </header>
+
+    <main style="display: flex; flex-direction: column; gap: 24px;">
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Add New Domain</h2>
+            <div class="subtitle">Map a local domain to a target port</div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <form method="POST" action="/api/aliases" class="form-grid" style="display: block;">
+            <div class="form-group full-width" style="display: grid; grid-template-columns: 2fr 2fr auto; gap: 16px; align-items: flex-end;">
+              <div class="form-group">
+                <label class="form-label">Domain Name</label>
+                <div class="domain-input-wrapper">
+                  <input class="form-input" name="domain" placeholder="myapp" required />
+                  <select name="tld" class="form-select tld-select">
+                    @each(tld in supportedTlds)
+                      <option value="{{ tld }}">{{ tld }}</option>
+                    @end
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Target Port / Host</label>
+                <input class="form-input" name="target" placeholder="localhost:3000" required />
+              </div>
+
+              <div class="form-actions" style="margin: 0;">
+                <button type="submit" class="btn btn-primary" style="height: 39px; padding-left: 24px; padding-right: 24px; white-space: nowrap;">Add Alias</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Domains</h2>
+            <div class="subtitle">Manage your configured domain aliases</div>
+          </div>
+        </div>
+
+        @if(config.aliases.length === 0)
+          <div class="empty-state">
+            <p>No domains configured yet. Add one above to get started.</p>
+          </div>
+        @else
+          <div class="data-table">
+            <div class="data-table-header" style="grid-template-columns: 1.5fr 1fr 0.5fr auto;">
+              <div class="col">Domain</div>
+              <div class="col">Target</div>
+              <div class="col">Status</div>
+              <div class="col" style="text-align: right;">Actions</div>
+            </div>
+            
+            @each(alias in config.aliases)
+              <div class="data-table-row" style="grid-template-columns: 1.5fr 1fr 0.5fr auto;">
+                <div class="domain-cell">
+                  <a href="http://{{ alias.domain }}" target="_blank" class="domain-name">
+                    {{ alias.parts.name }}<span class="domain-tld">{{ alias.parts.tld }}</span>
+                  </a>
+                </div>
+                
+                <div class="target-cell">
+                  <span class="protocol-badge {{ alias.targetProtocol }}">{{ alias.targetProtocol }}</span>
+                  {{ alias.target }}
+                </div>
+                
+                <div>
+                  <span class="status-badge {{ alias.enabled ? 'enabled' : 'disabled' }}">
+                    {{ alias.enabled ? 'Active' : 'Paused' }}
+                  </span>
+                </div>
+                
+                <div class="row-actions">
+                  <form method="POST" action="/api/aliases/{{ alias.domain }}/toggle" style="display:inline; margin: 0;">
+                    <button type="submit" class="btn btn-ghost btn-sm">
+                      {{ alias.enabled ? 'Pause' : 'Enable' }}
+                    </button>
+                  </form>
+                  <form method="POST" action="/api/aliases/{{ alias.domain }}/delete" style="display:inline; margin: 0;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </div>
+            @end
+          </div>
+        @end
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Supported TLDs</h2>
+            <div class="subtitle">These variations get internal self-signed TLS via Caddy.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="tld-badges">
+            @each(tld in supportedTlds)
+              <span class="tld-badge">
+                <span class="tld-dot"></span>
+                {{ tld }}
+              </span>
+            @end
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>
