@@ -85,7 +85,7 @@
             @each(alias in config.aliases)
               <div class="data-table-row" style="grid-template-columns: 1.5fr 1fr 0.5fr auto;">
                 <div class="domain-cell">
-                  <a href="http://{{ alias.domain }}" target="_blank" class="domain-name">
+                  <a href="{{ alias.publicUrl }}" target="_blank" class="domain-name">
                     {{ alias.parts.name }}<span class="domain-tld">{{ alias.parts.tld }}</span>
                   </a>
                 </div>

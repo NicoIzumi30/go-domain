@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "bun run --hot server.ts",
     "start": "bun run server.ts",
-    "background": "pm2 start server.ts --interpreter bun --name go-domain",
-    "stop": "pm2 stop go-domain"
+    "background": "pm2 start ecosystem.config.cjs",
+    "stop": "pm2 stop go-domain caddy"
   },
   "dependencies": {
     "edge.js": "^6.5.0",

@@ -27,13 +27,19 @@ function extractDomainParts(fullDomain: string) {
   return { name: fullDomain, tld: '.test' };
 }
 
+function publicHttpsUrl(domain: string, port: number) {
+  return port === 443 ? `https://${domain}` : `https://${domain}:${port}`;
+}
+
 app.get('/', async (c) => {
   const config = readConfig();
+  const caddyHttpsPort = Number(config.caddyHttpsPort || 443);
   
   // Transform aliases for view
   const aliases = config.aliases.map((a: any) => ({
     ...a,
-    parts: extractDomainParts(a.domain)
+    parts: extractDomainParts(a.domain),
+    publicUrl: publicHttpsUrl(a.domain, caddyHttpsPort)
   }));
 
   const html = await edge.render('app', {
