@@ -191,6 +191,58 @@ Go Domain automatically configures Caddy to issue **Local TLS (Self-Signed HTTPS
 
 `.test`, `.local`, `.localhost`, `.internal`, `.example`, `.invalid`, `.lan`, `.dev.local`, `.app.local`, `.site.local`, `.project.local`
 
+### Trusting Local HTTPS
+
+Browsers will show `net::ERR_CERT_AUTHORITY_INVALID` until the local Caddy certificate authority is trusted on the machine.
+
+Run:
+
+```bash
+gd trust
+```
+
+or without the shortcut:
+
+```bash
+sudo ./scripts/go-domain trust
+```
+
+Then fully close and reopen the browser before accessing the local domain again.
+
+Go Domain uses Caddy's admin endpoint at `127.0.0.2:2020`. If trust fails with `connection refused`, make sure the generated Caddyfile uses that admin address:
+
+```bash
+sudo head -20 /var/lib/go-domain/Caddyfile
+```
+
+Expected global block:
+
+```caddyfile
+{
+    admin 127.0.0.2:2020
+}
+```
+
+If the file still contains `admin off`, update it and restart Caddy:
+
+```bash
+sudo sed -i 's/admin off/admin 127.0.0.2:2020/' /var/lib/go-domain/Caddyfile
+gd restart-caddy
+gd trust
+```
+
+Check that the admin endpoint is listening:
+
+```bash
+sudo ss -ltnp | grep 2020
+```
+
+Expected:
+
+```text
+127.0.0.2:2020 ... caddy
+```
+
 ---
 
 ## Maintenance Commands
