@@ -1,11 +1,15 @@
+const projectDir = __dirname;
+const sudoUser = process.env.SUDO_USER;
+const bunBin = process.env.BUN_BIN || (sudoUser ? `/home/${sudoUser}/.bun/bin/bun` : "bun");
+
 module.exports = {
   apps: [
     {
       name: "go-domain",
-      script: "/home/vm/.bun/bin/bun",
+      script: bunBin,
       args: "run server.ts",
       interpreter: "none",
-      cwd: "/home/vm/project/go-domain",
+      cwd: projectDir,
       env: {
         GO_DOMAIN_HOME: "/var/lib/go-domain"
       },

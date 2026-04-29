@@ -1,0 +1,74 @@
+#!/usr/bin/env sh
+set -eu
+
+PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PM2_BIN=${PM2_BIN:-}
+BUN_BIN=${BUN_BIN:-}
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo ./scripts/go-domain <command>" >&2
+  exit 1
+fi
+
+if [ -z "$PM2_BIN" ]; then
+  if command -v bunx >/dev/null 2>&1; then
+    PM2_BIN="bunx pm2"
+  elif [ -n "${SUDO_USER:-}" ] && [ -x "/home/${SUDO_USER}/.bun/bin/bunx" ]; then
+    PM2_BIN="/home/${SUDO_USER}/.bun/bin/bunx pm2"
+  elif [ -x "/home/vm/.bun/bin/bunx" ]; then
+    PM2_BIN="/home/vm/.bun/bin/bunx pm2"
+  else
+    echo "bunx not found. Set PM2_BIN, for example:" >&2
+    echo "sudo PM2_BIN='/home/vm/.bun/bin/bunx pm2' ./scripts/go-domain status" >&2
+    exit 1
+  fi
+fi
+
+if [ -z "$BUN_BIN" ]; then
+  if command -v bun >/dev/null 2>&1; then
+    BUN_BIN=$(command -v bun)
+  elif [ -n "${SUDO_USER:-}" ] && [ -x "/home/${SUDO_USER}/.bun/bin/bun" ]; then
+    BUN_BIN="/home/${SUDO_USER}/.bun/bin/bun"
+  elif [ -x "/home/vm/.bun/bin/bun" ]; then
+    BUN_BIN="/home/vm/.bun/bin/bun"
+  fi
+fi
+
+export BUN_BIN
+
+run_pm2() {
+  # shellcheck disable=SC2086
+  $PM2_BIN "$@"
+}
+
+case "${1:-status}" in
+  start)
+    run_pm2 start "$PROJECT_DIR/ecosystem.config.cjs"
+    ;;
+  restart)
+    run_pm2 restart "$PROJECT_DIR/ecosystem.config.cjs"
+    ;;
+  restart-app)
+    run_pm2 delete go-domain >/dev/null 2>&1 || true
+    run_pm2 start "$PROJECT_DIR/ecosystem.config.cjs" --only go-domain
+    ;;
+  restart-caddy)
+    run_pm2 restart caddy
+    ;;
+  status)
+    run_pm2 status
+    ;;
+  logs)
+    run_pm2 logs "${2:-}" --lines "${3:-100}"
+    ;;
+  stop)
+    run_pm2 stop go-domain caddy
+    ;;
+  delete)
+    run_pm2 delete go-domain caddy
+    ;;
+  *)
+    echo "Usage: sudo ./scripts/go-domain {start|restart|restart-app|restart-caddy|status|logs [app] [lines]|stop|delete}" >&2
+    exit 1
+    ;;
+esac

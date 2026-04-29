@@ -16,19 +16,12 @@ A lightweight, web-based local domain manager for Ubuntu/Linux. It runs as a bac
 
 ## Requirements
 
-Before proceeding with the installation, ensure your system meets the following requirements:
+Go Domain is intended for Ubuntu Linux. The setup script checks and installs the required tools when they are missing:
 
-1. **Ubuntu Linux**: Run the background service with `sudo` because the app modifies `/etc/hosts`.
-2. **Node.js & npm**: Required to install PM2 and Bun globally.
-3. **Bun Runtime:** Install globally via npm:
-   ```bash
-   sudo npm install -g bun
-   ```
-4. **PM2:** Install globally:
-   ```bash
-   sudo npm install -g pm2
-   ```
-5. **Caddy Server:** Install from Ubuntu packages or the official Caddy apt repository so the `caddy` command is available in `PATH`.
+- `curl`
+- Bun
+- PM2, through `bunx pm2`
+- Caddy
 
 By default, Go Domain runs Caddy on `80` and `443` so local domains open without a port suffix, for example `https://myapp.test`.
 
@@ -44,7 +37,10 @@ go-domain/
 ├── server.ts               # Hono web server entry point (Port 3333)
 ├── manager.ts              # Core logic for hosts editing, Caddyfile generation, and DNS flushing
 ├── ecosystem.config.cjs    # PM2 configuration to run the Web UI and Caddy in the background
+├── setup.sh                # One-time installer and shell shortcut setup
 ├── package.json            # Project dependencies and scripts
+├── scripts/
+│   └── go-domain           # Runtime helper for start/status/restart/log commands
 ├── public/
 │   └── styles.css          # Dark Mode UI design system
 └── views/
@@ -72,34 +68,50 @@ Default runtime ports:
 
 ## Installation & Setup
 
-Follow these steps to install and run **Go Domain** on your machine:
+Run the setup script from the project directory:
 
-### Step 1: Project Setup
-1. Clone this repository or navigate to the project directory:
-   ```bash
-   cd path/to/go-domain
-   ```
-2. Install dependencies using Bun:
-   ```bash
-   bun install
-   ```
-3. Create the application data directory:
-   ```bash
-   sudo mkdir -p /var/lib/go-domain/logs
-   printf '{\n    admin off\n}\n' | sudo tee /var/lib/go-domain/Caddyfile
-   ```
+```bash
+chmod +x setup.sh
+./setup.sh
+```
 
-### Step 2: Starting the Background Service
+The setup checks for required tools, installs anything missing, prepares `/var/lib/go-domain`, installs project dependencies, disables the default system Caddy service, and adds shell shortcuts to your active shell rc file (`~/.bashrc` or `~/.zshrc`).
+
+There are two scripts by design:
+
+- `setup.sh` is for one-time machine setup.
+- `scripts/go-domain` is the runtime helper used by the `gd` shortcut.
+
+After setup, open a new terminal or reload your shell:
+
+```bash
+source ~/.bashrc
+```
+
+If you use Zsh:
+
+```bash
+source ~/.zshrc
+```
+
+### Starting the Background Service
 1. Start the web dashboard and Caddy server as background processes using PM2:
    ```bash
-   sudo bunx pm2 start ecosystem.config.cjs
+   gd start
    ```
 2. Verify that both services are online:
    ```bash
-   sudo bunx pm2 status
+   gd status
    ```
 
-### Step 3: Accessing the Dashboard
+If the shortcut is not active yet, use the helper directly:
+
+```bash
+sudo ./scripts/go-domain start
+sudo ./scripts/go-domain status
+```
+
+### Accessing the Dashboard
 1. Open your browser and navigate to:
    **http://localhost:3333**
 2. Add a new domain alias (e.g., Domain: `myapp`, TLD: `.test`, Target: `localhost:8000`).
@@ -152,7 +164,7 @@ Restart Apache and Go Domain:
 
 ```bash
 sudo systemctl restart apache2
-sudo bunx pm2 restart ecosystem.config.cjs
+gd restart
 ```
 
 If you also have HTTPS virtual hosts, change `*:443` to `127.0.0.1:443`.
@@ -184,7 +196,18 @@ Go Domain automatically configures Caddy to issue **Local TLS (Self-Signed HTTPS
 
 Since the application runs as a background daemon via PM2, use the following commands for maintenance:
 
-- **Check service status:** `sudo bunx pm2 status`
-- **View activity/error logs:** `sudo bunx pm2 logs`
-- **Restart services:** `sudo bunx pm2 restart ecosystem.config.cjs`
-- **Stop all services:** `sudo bunx pm2 stop all`
+- **Check service status:** `gd status`
+- **View activity/error logs:** `gd logs`
+- **Restart app only:** `gd restart-app`
+- **Restart Caddy only:** `gd restart-caddy`
+- **Restart services:** `gd restart`
+- **Stop services:** `gd stop`
+
+Direct helper commands are also available:
+
+- **Check service status:** `sudo ./scripts/go-domain status`
+- **View activity/error logs:** `sudo ./scripts/go-domain logs`
+- **Restart app only:** `sudo ./scripts/go-domain restart-app`
+- **Restart Caddy only:** `sudo ./scripts/go-domain restart-caddy`
+- **Restart services:** `sudo ./scripts/go-domain restart`
+- **Stop services:** `sudo ./scripts/go-domain stop`
